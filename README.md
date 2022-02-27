@@ -1,3 +1,4 @@
 # PhotoGallery
 
-AsycTask background thread is all set now
+AsyncTask background thread is all set now
+
