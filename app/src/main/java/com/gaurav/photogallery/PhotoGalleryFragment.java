@@ -3,6 +3,7 @@ package com.gaurav.photogallery;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -20,9 +21,9 @@ import java.util.List;
 
 public class PhotoGalleryFragment extends Fragment{
     private static final String TAG = "PhotoGalleryFragment";
-
-    private RecyclerView mPhotoRecyclerView;
+    private RecyclerView photoRecyclerView;
     private List<GalleryItem> mItems = new ArrayList<>();
+    private ThumbnailDownloader<PhotoHolder> thumbnailDownloader;
 
     public static Fragment newInstance() {
         return new PhotoGalleryFragment();
@@ -31,23 +32,35 @@ public class PhotoGalleryFragment extends Fragment{
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-         new FetchItemsTask().execute();
+        new FetchItemsTask().execute();
+        setReenterTransition(true);
+        thumbnailDownloader = new ThumbnailDownloader<>();
+        thumbnailDownloader.start();
+        thumbnailDownloader.getLooper();
+        Log.i(TAG, "Background thread started");
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.fragment_photo_gallery, container, false);
-        mPhotoRecyclerView = (RecyclerView) v.findViewById(R.id.photo_recycler_view);
-        mPhotoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
+        photoRecyclerView = (RecyclerView) v.findViewById(R.id.photo_recycler_view);
+        photoRecyclerView.setLayoutManager(new GridLayoutManager(getActivity(), 3));
         setupAdapter();
 
         return v;
     }
 
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        thumbnailDownloader.quit();
+        Log.i(TAG, "Background thread destroyed");
+    }
+
     private void setupAdapter() {
         if (isAdded()) {
-            mPhotoRecyclerView.setAdapter(new PhotoAdapter(mItems));
+            photoRecyclerView.setAdapter(new PhotoAdapter(mItems));
         }
     }
 
@@ -83,6 +96,7 @@ public class PhotoGalleryFragment extends Fragment{
             GalleryItem galleryItem = galleryItems.get(position);
             Drawable placeholder = getResources().getDrawable(R.drawable.ic_launcher_background);
             holder.bindDrawable(placeholder);
+            thumbnailDownloader.queueThumbnail(holder, galleryItem.getUrl());
         }
 
         @Override
