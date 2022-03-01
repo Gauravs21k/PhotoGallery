@@ -1,8 +1,11 @@
 package com.gaurav.photogallery;
 
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,7 +37,17 @@ public class PhotoGalleryFragment extends Fragment{
         super.onCreate(savedInstanceState);
         new FetchItemsTask().execute();
         setReenterTransition(true);
-        thumbnailDownloader = new ThumbnailDownloader<>();
+        Handler responseHandler = new Handler();
+        thumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
+
+        thumbnailDownloader.setThumbnailDownloadListener(
+                new ThumbnailDownloader.ThumbnailDownloadListener<PhotoHolder>() {
+            @Override
+            public void onThumbnailDownloaded(PhotoHolder target, Bitmap thumbnail) {
+                Drawable drawable = new BitmapDrawable(getResources(), thumbnail);
+                target.bindDrawable(drawable);
+            }
+        });
         thumbnailDownloader.start();
         thumbnailDownloader.getLooper();
         Log.i(TAG, "Background thread started");
@@ -49,6 +62,12 @@ public class PhotoGalleryFragment extends Fragment{
         setupAdapter();
 
         return v;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        thumbnailDownloader.clearQueue();
     }
 
     @Override
