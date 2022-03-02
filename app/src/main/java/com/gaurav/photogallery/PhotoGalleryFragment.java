@@ -127,7 +127,12 @@ public class PhotoGalleryFragment extends Fragment{
     private class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>> {
         @Override
         protected List<GalleryItem> doInBackground(Void... params) {
-           return new FlickrFetcher().fetchItems();
+            String query = "girl";
+            if (query == null) {
+                return new FlickrFetcher().fetchRecentPhotos();
+            } else {
+                return new FlickrFetcher().searchPhotos(query);
+            }
         }
 
         @Override
