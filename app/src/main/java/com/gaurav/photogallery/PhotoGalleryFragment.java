@@ -107,7 +107,20 @@ public class PhotoGalleryFragment extends Fragment{
     }
 
     private void updateItems() {
-        new FetchItemsTask().execute();
+        String query = QueryPreferences.getStoredQuery(getActivity());
+        new FetchItemsTask(query).execute();
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.menu_item_clear:
+                QueryPreferences.setStoredQuery(getActivity(), null);
+                updateItems();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     private void setupAdapter() {
@@ -158,9 +171,14 @@ public class PhotoGalleryFragment extends Fragment{
     }
 
     private class FetchItemsTask extends AsyncTask<Void, Void, List<GalleryItem>> {
+        private final String query;
+
+        public FetchItemsTask(String query) {
+            this.query = query;
+        }
+
         @Override
         protected List<GalleryItem> doInBackground(Void... params) {
-            String query = "bike";
             if (query == null) {
                 return new FlickrFetcher().fetchRecentPhotos();
             } else {
