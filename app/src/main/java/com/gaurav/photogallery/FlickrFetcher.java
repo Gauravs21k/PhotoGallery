@@ -75,6 +75,15 @@ public class FlickrFetcher {
         return items;
     }
 
+    private String buildUrl(String method, String query) {
+        Uri.Builder builder = ENDPOINT.buildUpon()
+                .appendQueryParameter("method", method);
+        if (method==SEARCH_METHOD) {
+            builder.appendQueryParameter("text", query);
+        }
+        return builder.build().toString();
+    }
+
     public void parseItems(List<GalleryItem> items, JSONObject jsonObject) throws JSONException {
         JSONObject photosJsonObject = jsonObject.getJSONObject("photos");
         JSONArray photoJsonArray = photosJsonObject.getJSONArray("photo");
