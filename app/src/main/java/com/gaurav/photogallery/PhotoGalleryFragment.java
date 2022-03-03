@@ -1,5 +1,6 @@
 package com.gaurav.photogallery;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -23,6 +24,8 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.gaurav.photogallery.services.PollService;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -42,6 +45,8 @@ public class PhotoGalleryFragment extends Fragment{
         setRetainInstance(true);
         setHasOptionsMenu(true);
         updateItems();
+        Intent intent = PollService.newIntent(getActivity());
+        getActivity().startService(intent);
         Handler responseHandler = new Handler();
         thumbnailDownloader = new ThumbnailDownloader<>(responseHandler);
 
